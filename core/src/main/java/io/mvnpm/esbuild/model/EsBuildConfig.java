@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.mvnpm.process.ProcessParameters;
+
 public record EsBuildConfig(
         String esBuildVersion,
         boolean bundle,
@@ -46,7 +48,7 @@ public record EsBuildConfig(
 
         String publicPath,
 
-        List<String> external) {
+        List<String> external) implements ProcessParameters {
 
     public static EsBuildConfigBuilder builder() {
         return new EsBuildConfigBuilder().withDefault();
@@ -121,6 +123,40 @@ public record EsBuildConfig(
                 .external(this.external);
     }
 
+    @Override
+    public String[] toArguments() {
+        final Field[] fields = EsBuildConfig.class.getDeclaredFields();
+        List<String> result = new ArrayList<>(fields.length);
+        for (Field field : fields) {
+            try {
+                final Object value = field.get(this);
+                if (value != null) {
+                    final String fieldName = field.getName();
+                    if (value == Boolean.TRUE) {
+                        result.add("--" + convertField(fieldName));
+                    } else if (value instanceof List) {
+                        ((List<?>) value).forEach(e -> result.add("--%s:%s".formatted(convertField(fieldName), e.toString())));
+                    } else if (value instanceof Map) {
+                        result.addAll(mapToString(fieldName, (Map<?, ?>) value));
+                    } else if ("entryPoint".equals(field.getName())) {
+                        result.addAll(List.of((String[]) value));
+                    } else if (!(value instanceof Boolean)) {
+                        String fn = convertField(fieldName);
+                        String v = value.toString();
+                        if (!fn.equals("outdir")) {
+                            v = v.toLowerCase();
+                        }
+                        result.add("--%s=%s".formatted(fn, v));
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return result.toArray(String[]::new);
+    }
+
     public enum Format {
         IIFE,
         CJS,
@@ -160,39 +196,6 @@ public record EsBuildConfig(
         NODE10,
         IE9,
         OPERA45
-    }
-
-    public String[] toParams() {
-        final Field[] fields = EsBuildConfig.class.getDeclaredFields();
-        List<String> result = new ArrayList<>(fields.length);
-        for (Field field : fields) {
-            try {
-                final Object value = field.get(this);
-                if (value != null) {
-                    final String fieldName = field.getName();
-                    if (value == Boolean.TRUE) {
-                        result.add("--" + convertField(fieldName));
-                    } else if (value instanceof List) {
-                        ((List<?>) value).forEach(e -> result.add("--%s:%s".formatted(convertField(fieldName), e.toString())));
-                    } else if (value instanceof Map) {
-                        result.addAll(mapToString(fieldName, (Map<?, ?>) value));
-                    } else if ("entryPoint".equals(field.getName())) {
-                        result.addAll(List.of((String[]) value));
-                    } else if (!(value instanceof Boolean)) {
-                        String fn = convertField(fieldName);
-                        String v = value.toString();
-                        if (!fn.equals("outdir")) {
-                            v = v.toLowerCase();
-                        }
-                        result.add("--%s=%s".formatted(fn, v));
-                    }
-                }
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return result.toArray(String[]::new);
     }
 
     private static String convertField(String field) {

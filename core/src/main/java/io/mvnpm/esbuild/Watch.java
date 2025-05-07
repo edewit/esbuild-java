@@ -6,8 +6,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 import io.mvnpm.esbuild.model.EntryPoint;
-import io.mvnpm.esbuild.model.WatchBuildResult;
-import io.mvnpm.esbuild.model.WatchStartResult;
+import io.mvnpm.process.model.WatchExecuteResult;
+import io.mvnpm.process.model.WatchStartResult;
 
 public class Watch implements Closeable {
 
@@ -16,9 +16,9 @@ public class Watch implements Closeable {
 
     private final Path dist;
 
-    private final WatchBuildResult firstBuildResult;
+    private final WatchExecuteResult firstBuildResult;
 
-    public Watch(WatchStartResult.WatchProcess process, Path workDir, Path dist, WatchBuildResult firstBuildResult) {
+    public Watch(WatchStartResult.WatchProcess process, Path workDir, Path dist, WatchExecuteResult firstBuildResult) {
         this.process = process;
         this.workDir = workDir;
         this.dist = dist;
@@ -38,7 +38,7 @@ public class Watch implements Closeable {
         return workDir;
     }
 
-    public WatchBuildResult firstBuildResult() {
+    public WatchExecuteResult firstBuildResult() {
         return firstBuildResult;
     }
 

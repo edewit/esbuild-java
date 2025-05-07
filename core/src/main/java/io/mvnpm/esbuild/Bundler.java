@@ -12,8 +12,12 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import io.mvnpm.esbuild.install.WebDepsInstaller;
-import io.mvnpm.esbuild.model.*;
-import io.mvnpm.esbuild.resolve.Resolver;
+import io.mvnpm.esbuild.model.BundleOptions;
+import io.mvnpm.esbuild.model.BundleResult;
+import io.mvnpm.esbuild.model.EsBuildConfig;
+import io.mvnpm.process.ProcessEventListener;
+import io.mvnpm.process.model.*;
+import io.mvnpm.process.resolve.Resolver;
 
 public class Bundler {
     private static final Logger logger = Logger.getLogger(Bundler.class.getName());
@@ -78,7 +82,7 @@ public class Bundler {
                 .build();
     }
 
-    public static Watch watch(BundleOptions bundleOptions, BuildEventListener eventListener, boolean install)
+    public static Watch watch(BundleOptions bundleOptions, ProcessEventListener eventListener, boolean install)
             throws IOException {
         final Path workDir = getWorkDir(bundleOptions);
         if (install) {
@@ -112,21 +116,21 @@ public class Bundler {
         deleteRecursive(nodeModulesDir);
     }
 
-    protected static WatchStartResult esBuildWatch(Path workDir, EsBuildConfig esBuildConfig, BuildEventListener listener)
+    protected static WatchStartResult esBuildWatch(Path workDir, EsBuildConfig esBuildConfig, ProcessEventListener listener)
             throws IOException {
-        final Execute execute = getExecute(workDir, esBuildConfig);
+        final io.mvnpm.process.Execute execute = getExecute(workDir, esBuildConfig);
         return execute.watch(listener);
     }
 
     protected static ExecuteResult esBuild(Path workDir, EsBuildConfig esBuildConfig) throws IOException {
-        final Execute execute = getExecute(workDir, esBuildConfig);
+        final io.mvnpm.process.Execute execute = getExecute(workDir, esBuildConfig);
         return execute.executeAndWait();
     }
 
-    private static Execute getExecute(Path workDir, EsBuildConfig esBuildConfig) throws IOException {
+    private static io.mvnpm.process.Execute getExecute(Path workDir, EsBuildConfig esBuildConfig) throws IOException {
         final String version = esBuildConfig.esBuildVersion() != null ? esBuildConfig.esBuildVersion()
                 : Bundler.ESBUILD_EMBEDDED_VERSION;
-        final Path esBuildExec = Resolver.create().resolve(version);
-        return new Execute(workDir, esBuildExec.toFile(), esBuildConfig);
+        final Path esBuildExec = Resolver.create(new EsBuildFilenameMapper()).resolve(version);
+        return new io.mvnpm.process.Execute(workDir, esBuildExec.toFile(), esBuildConfig);
     }
 }

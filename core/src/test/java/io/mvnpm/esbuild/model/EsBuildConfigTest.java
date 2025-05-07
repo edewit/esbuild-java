@@ -18,7 +18,7 @@ public class EsBuildConfigTest {
         esBuildConfig.format(EsBuildConfig.Format.ESM);
 
         // when
-        final String[] params = esBuildConfig.build().toParams();
+        final String[] params = esBuildConfig.build().toArguments();
 
         // then
         assertThat(asList(params), containsInAnyOrder("--bundle", "--format=esm"));
@@ -31,7 +31,7 @@ public class EsBuildConfigTest {
         esBuildConfig.loader(Map.of(".js", EsBuildConfig.Loader.JSX, ".css", EsBuildConfig.Loader.LOCAL_CSS));
 
         // when
-        final String[] params = esBuildConfig.build().toParams();
+        final String[] params = esBuildConfig.build().toArguments();
 
         // then
         assertThat(asList(params), containsInAnyOrder("--loader:.js=jsx", "--loader:.css=local-css"));
@@ -44,7 +44,7 @@ public class EsBuildConfigTest {
         esBuildConfig.publicPath("https://www.example.com/v1");
 
         // when
-        final String[] params = esBuildConfig.build().toParams();
+        final String[] params = esBuildConfig.build().toArguments();
 
         // then
         assertThat(asList(params), containsInAnyOrder("--public-path=https://www.example.com/v1"));
@@ -57,7 +57,7 @@ public class EsBuildConfigTest {
                 .entryPoint(new String[] { "main.js", "bundle.js" }).outDir("/tmp").minify().build();
 
         // when
-        final String[] params = esBuildConfig.toParams();
+        final String[] params = esBuildConfig.toArguments();
 
         // then
         assertThat(asList(params), containsInAnyOrder("--bundle", "main.js", "bundle.js", "--minify", "--format=esm",
@@ -76,7 +76,7 @@ public class EsBuildConfigTest {
         esBuildConfig.addExternal("/images/*");
 
         // when
-        final String[] params = esBuildConfig.build().toParams();
+        final String[] params = esBuildConfig.build().toArguments();
 
         // then
         assertThat(asList(params), containsInAnyOrder("--external:*.png", "--external:/images/*"));
@@ -89,7 +89,7 @@ public class EsBuildConfigTest {
         esBuildConfig.chunkNames("chunks/[name]-[hash]");
 
         //when
-        final String[] params = esBuildConfig.build().toParams();
+        final String[] params = esBuildConfig.build().toArguments();
 
         // then
         assertThat(asList(params), containsInAnyOrder("--chunk-names=chunks/[name]-[hash]"));

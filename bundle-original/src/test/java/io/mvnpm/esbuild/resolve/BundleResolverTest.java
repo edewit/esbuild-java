@@ -10,6 +10,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import io.mvnpm.esbuild.Bundler;
+import io.mvnpm.esbuild.EsBuildFilenameMapper;
+import io.mvnpm.process.resolve.BundledResolver;
+import io.mvnpm.process.resolve.Resolver;
 
 public class BundleResolverTest extends BundleTester {
 
@@ -25,7 +28,8 @@ public class BundleResolverTest extends BundleTester {
     @Test
     public void resolve() throws IOException {
         // when
-        final Path resolve = new BundledResolver(THROWING_RESOLVER).resolve(Bundler.ESBUILD_EMBEDDED_VERSION);
+        final Path resolve = new BundledResolver(THROWING_RESOLVER, new EsBuildFilenameMapper())
+                .resolve(Bundler.ESBUILD_EMBEDDED_VERSION);
 
         assertFalse(Bundler.ESBUILD_EMBEDDED_VERSION.contains("mvnpm"));
 

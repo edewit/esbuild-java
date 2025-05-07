@@ -10,8 +10,9 @@ import org.junit.jupiter.api.Test;
 
 import io.mvnpm.esbuild.model.EsBuildConfig;
 import io.mvnpm.esbuild.model.EsBuildConfigBuilder;
-import io.mvnpm.esbuild.model.ExecuteResult;
-import io.mvnpm.esbuild.resolve.Resolver;
+import io.mvnpm.process.Execute;
+import io.mvnpm.process.model.ExecuteResult;
+import io.mvnpm.process.resolve.Resolver;
 
 public class ExecuteTest {
 
@@ -20,7 +21,7 @@ public class ExecuteTest {
         final EsBuildConfigBuilder esBuildConfig = EsBuildConfig.builder();
         esBuildConfig.version(true);
         final String defaultVersion = Bundler.ESBUILD_EMBEDDED_VERSION;
-        final Path path = Resolver.create().resolve(defaultVersion);
+        final Path path = Resolver.create(new EsBuildFilenameMapper()).resolve(defaultVersion);
         String workingDirectory = System.getProperty("user.dir");
         final ExecuteResult executeResult = new Execute(Paths.get(workingDirectory), path.toFile(), esBuildConfig.build())
                 .executeAndWait();

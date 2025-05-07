@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import io.mvnpm.esbuild.model.*;
 import io.mvnpm.esbuild.model.WebDependency.WebDependencyType;
+import io.mvnpm.process.ProcessException;
 
 public class BundlerTest {
 
@@ -72,7 +73,7 @@ public class BundlerTest {
                 "application-mvnpm.js").withEsConfig(EsBuildConfig.builder().fixedEntryNames().define("foo", "\"bar").build())
                 .build();
 
-        assertThrows(BundleException.class, () -> {
+        assertThrows(ProcessException.class, () -> {
             Bundler.watch(options, (r) -> {
             }, true);
         });
@@ -87,10 +88,10 @@ public class BundlerTest {
 
         // when
         AtomicReference<CountDownLatch> latch = new AtomicReference<>(new CountDownLatch(1));
-        AtomicReference<BundleException> bundleException = new AtomicReference<>();
+        AtomicReference<ProcessException> bundleException = new AtomicReference<>();
         final Watch watch = Bundler.watch(options, (r) -> {
             if (!r.isSuccess()) {
-                bundleException.set(r.bundleException());
+                bundleException.set(r.processException());
             }
             latch.get().countDown();
         }, true);
@@ -126,10 +127,10 @@ public class BundlerTest {
 
         // when
         AtomicReference<CountDownLatch> latch = new AtomicReference<>(new CountDownLatch(1));
-        AtomicReference<BundleException> bundleException = new AtomicReference<>();
+        AtomicReference<ProcessException> bundleException = new AtomicReference<>();
         final Watch watch = Bundler.watch(options, (r) -> {
             if (!r.isSuccess()) {
-                bundleException.set(r.bundleException());
+                bundleException.set(r.processException());
             }
             latch.get().countDown();
         }, true);
@@ -137,8 +138,8 @@ public class BundlerTest {
         // then
         assertTrue(latch.get().getCount() == 1, "First build is not using the listener");
         assertTrue(watch.isAlive(), "process is alive");
-        assertNotNull(watch.firstBuildResult().bundleException(), "Error during bundling");
-        assertTrue(watch.firstBuildResult().bundleException().output().contains("[ERROR] Could not resolve \"\""));
+        assertNotNull(watch.firstBuildResult().processException(), "Error during bundling");
+        assertTrue(watch.firstBuildResult().processException().output().contains("[ERROR] Could not resolve \"\""));
 
         final Path app = watch.workDir().resolve("application-error.js");
         assertTrue(Files.exists(app));
@@ -159,7 +160,7 @@ public class BundlerTest {
 
     @Test
     public void shouldThrowException() {
-        assertThrows(BundleException.class, () -> {
+        assertThrows(ProcessException.class, () -> {
             executeTest(List.of("/mvnpm/stimulus-3.2.1.jar"), WebDependencyType.MVNPM, "application-error.js", false);
         });
     }
